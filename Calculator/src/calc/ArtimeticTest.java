@@ -4,7 +4,7 @@ public class ArtimeticTest {
 
 	public static void main(String[] args) {
 		String test1 = "-3+4*5-7";
-		String test2 = "1+(2+3+6)/4";
+		String test2 = "1+(2*3+6)/4";
 		String test3 = "-2*-3";
 		String test4 = "+5-3*2";
 		String test5 = "(5+3)2";
