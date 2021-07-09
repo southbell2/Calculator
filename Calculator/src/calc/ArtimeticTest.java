@@ -1,33 +1,30 @@
 package calc;
+import java.util.ArrayList;
 
 public class ArtimeticTest {
 
 	public static void main(String[] args) {
-		String test1 = "-3+4*5-7";
-		String test2 = "1+(2*3+6)/4";
-		String test3 = "-2*-3";
-		String test4 = "+5-3*2";
-		String test5 = "(5+3)2";
-		String test6 = "5(5+3)";
+		ArrayList<String> tests = new ArrayList<>();
+		tests.add("-3+4*5-7");
+		tests.add("1+(2*3+6)/4");
+		tests.add("-2*-3");
+		tests.add("+5-3*2");
+		tests.add("(5+3)2");
+		tests.add("5(5+3)");
+		tests.add("13-28/9+2(132*24+13-12)");
+		tests.add("-*23");
+		tests.add("+123+45");
+		tests.add(",123+45");
+		tests.add("++123+45");
+		tests.add("+123+*45");
+		tests.add("123+45*");
+		tests.add("/123*45");
 		
 		Arithmetic calculator = new Arithmetic();
-		calculator.setExpression(test1);
-		calculator.changeExpression();
-		
-		calculator.setExpression(test2);
-		calculator.changeExpression();
-		
-		calculator.setExpression(test3);
-		calculator.changeExpression();
-		
-		calculator.setExpression(test4);
-		calculator.changeExpression();
-		
-		calculator.setExpression(test5);
-		calculator.changeExpression();
-		
-		calculator.setExpression(test6);
-		calculator.changeExpression();
+		for(String test : tests) {
+			calculator.setExpression(test);
+			calculator.printResult();
+		}
 	}
 
 }

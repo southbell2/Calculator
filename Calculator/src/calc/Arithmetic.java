@@ -2,10 +2,12 @@ package calc;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.StringTokenizer;
 
+//실제 식을 계산해주는 Arithmetic 객체
 public class Arithmetic {
 	private String expression;
-	private int result;
+	private double result;
 	
 	//생성자 
 	public Arithmetic() {
@@ -19,14 +21,130 @@ public class Arithmetic {
 		this.expression = string;
 	}
 	
-	//사칙연산의 결과값을 리턴하는 메소드
-	public int calculate() {
-		return 0;
+	//계산을 하고 계산이 가능하면 result 인스턴스 변수에 결과값을 저장한다
+	//중위표기식을 후위표기식으로 변환해서 계산한다
+	private boolean calculate() {
+		//피연산자와 연산자를 담을 스택
+		Deque<Double> operand = new ArrayDeque<>();
+		Deque<String> operator = new ArrayDeque<>();
+		
+		//changeExpression 메소드에서 -는 숫자로 변환해 뒀기 때문에 -연산은 없는 취급한다
+		//중위표기식을 후위표기식으로 변환하는 과정
+		StringTokenizer st = new StringTokenizer(expression, "+*/()", true);
+		while(st.hasMoreTokens()) {
+			String temp = st.nextToken();
+			if(temp.equals("+")) {
+				while(!operator.isEmpty() && !operator.peekLast().equals("(")) {
+					if(operand.size() < 2) return false;
+					String symbol = operator.pollLast();
+					if(symbol.equals("*")) {
+						double val2 = operand.pollLast();
+						double val1 = operand.pollLast();
+						operand.addLast(val1*val2);
+					} else if(symbol.equals("/")) {
+						double val2 = operand.pollLast();
+						double val1 = operand.pollLast();
+						double val = (double)Math.round((val1/val2)*1000000)/1000000;
+						operand.addLast(val);
+					} else {
+						double val2 = operand.pollLast();
+						double val1 = operand.pollLast();
+						operand.addLast(val1+val2);
+					}
+				} 
+				operator.addLast(temp);
+			} else if(temp.equals("*") || temp.equals("/")) {
+				while(!operator.isEmpty() && !operator.peekLast().equals("(") && !operator.peekLast().equals("+")) {
+					if(operand.size() < 2) return false;
+					String symbol = operator.pollLast();
+					if(symbol.equals("*")) {
+						double val2 = operand.pollLast();
+						double val1 = operand.pollLast();
+						operand.addLast(val1*val2);
+					} else {
+						double val2 = operand.pollLast();
+						double val1 = operand.pollLast();
+						double val = (double)Math.round((val1/val2)*1000000)/1000000;
+						operand.addLast(val);
+					}
+				} 
+				operator.addLast(temp);
+			} else if(temp.equals("(")) {
+				operator.addLast(temp);
+			} else if(temp.equals(")")) {
+				while(!operator.isEmpty() && !operator.peekLast().equals("(")) {
+					if(operand.size() < 2) return false;
+					String symbol = operator.pollLast();
+					if(symbol.equals("*")) {
+						double val2 = operand.pollLast();
+						double val1 = operand.pollLast();
+						operand.addLast(val1*val2);
+					} else if(symbol.equals("/")) {
+						double val2 = operand.pollLast();
+						double val1 = operand.pollLast();
+						double val = (double)Math.round((val1/val2)*1000000)/1000000;
+						operand.addLast(val);
+					} else {
+						double val2 = operand.pollLast();
+						double val1 = operand.pollLast();
+						operand.addLast(val1+val2);
+					}
+				}
+				
+				if(operator.isEmpty()) return false;
+				operator.pollLast();
+			} else {
+				if(isNumeric(temp)) {
+					operand.addLast(Double.parseDouble(temp));
+				} else {
+					return false;
+				}
+			}
+		}
+		//남아있는 연산 수행
+		while(!operator.isEmpty()) {
+			if(operand.size() < 2) return false;
+			String symbol = operator.pollLast();
+			if(symbol.equals("*")) {
+				double val2 = operand.pollLast();
+				double val1 = operand.pollLast();
+				operand.addLast(val1*val2);
+			} else if(symbol.equals("/")) {
+				double val2 = operand.pollLast();
+				double val1 = operand.pollLast();
+				double val = (double)Math.round((val1/val2)*1000000)/1000000;
+				operand.addLast(val);
+			} else {
+				double val2 = operand.pollLast();
+				double val1 = operand.pollLast();
+				operand.addLast(val1+val2);
+			}
+		}
+		
+		if(operand.size() != 1) {
+			return false;
+		}
+		result = operand.pollLast();
+		
+		return true;
+	}
+	//결과를 표시해주는 메소드
+	public void printResult() {
+		changeExpression();
+		if(calculate()) {
+			if(result % 1 == 0) {
+				System.out.println((int)result);
+			} else {
+				System.out.println(result);
+			}
+		} else {
+			System.out.println("Error!!");
+		}
 	}
 	
 	//연산식을 적당하게 바꿔주는 메소드
-	//5-2 같은 경우 5+(-2)로 5(3+2) 같은 경우 5*(3+2)로 바꿔주는 등 계산을 쉽게 만들어준다
-	public void changeExpression() {
+	//5-2 같은 경우 5+(-2)로 5(3+2) 같은 경우 5*(3+2)로 바꿔주는 등을 한다
+	private void changeExpression() {
 		StringBuilder sb = new StringBuilder();
 		for(int i = 0; i < expression.length(); i++) {
 			// 5-3 같은 경우 5+(-3)으로 변경
@@ -96,7 +214,15 @@ public class Arithmetic {
 		}
 		
 		expression = sb.toString();
-		System.out.println(expression);
+	}
+	//숫자인지 확인하는 메소드
+	public boolean isNumeric(String str) {
+		try {
+			Double.parseDouble(str);
+			return true;
+		} catch(NumberFormatException e) {
+			return false;
+		}
 	}
 	
 }
